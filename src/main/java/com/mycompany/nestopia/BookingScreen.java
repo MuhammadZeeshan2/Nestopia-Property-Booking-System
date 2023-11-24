@@ -109,9 +109,10 @@ private void populateBookingInfoTable() {
     
     try {
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/nestopia?zeroDateTimeBehavior=CONVERT_TO_NULL&user=root&password=");
-        String query = "SELECT cl.ClientName, cl.ContactPhone, bk.CheckinDate, bk.CheckoutDate, bk.RentalPrice, bk.TotalRevenue " +
-                       "FROM Bookings bk " +
-                       "JOIN Clients cl ON bk.ClientID = cl.ClientID";
+String query = "SELECT cl.ClientName, cl.ContactPhone, bk.CheckinDate, bk.CheckoutDate, bk.RentalPrice, bk.TotalRevenue, bk.PropertyName " +
+               "FROM Bookings bk " +
+               "JOIN Clients cl ON bk.ClientID = cl.ClientID";
+
               // String query = "SELECT * from bookings";
         
          
@@ -125,19 +126,23 @@ private void populateBookingInfoTable() {
         model.setRowCount(0);
 
         while (rs.next()) {
-;
-            String clientName = ClientNameBookingScreen.getText();
-            String contactPhone = PhoneNumberBookingInput.getText();
-            String selectedProperty = (String) PropertyMenu.getSelectedItem();
+
+//            String clientName = ClientNameBookingScreen.getText();
+//            String contactPhone = PhoneNumberBookingInput.getText();
+//            String selectedProperty = (String) PropertyMenu.getSelectedItem();
             
-            
+              String clientName = rs.getString("ClientName");
+              String contactPhone = rs.getString("ContactPhone");
+              String PropertyName=rs.getString("PropertyName");
+              System.out.println("Property Name :"+ PropertyName);
+              //PropertyNameString selectedProperty = (String) PropertyMenu.getSelectedItem();
             String checkinDate = rs.getString("CheckinDate");
             String checkoutDate = rs.getString("CheckoutDate");
             String rentalPrice = rs.getString("RentalPrice");
             String totalRevenue = rs.getString("TotalRevenue");
             
 
-            model.addRow(new Object[]{clientName, contactPhone,selectedProperty, checkinDate, checkoutDate, rentalPrice, totalRevenue});
+            model.addRow(new Object[]{clientName, contactPhone,PropertyName, checkinDate, checkoutDate, rentalPrice, totalRevenue});
         }
 
         conn.close();
@@ -306,12 +311,6 @@ private void populateBookingInfoTable() {
                         .addGap(21, 21, 21)
                         .addComponent(jLabel1))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(91, 91, 91)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(ApplyBookingButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(DeleteBookingButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(BackBookingButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
                         .addGap(31, 31, 31)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -338,7 +337,14 @@ private void populateBookingInfoTable() {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel6)
                                 .addGap(47, 47, 47)
-                                .addComponent(TotalRevenueBookingInput, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addComponent(TotalRevenueBookingInput, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(91, 91, 91)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(DeleteBookingButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(ApplyBookingButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(BackBookingButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -395,11 +401,11 @@ private void populateBookingInfoTable() {
                             .addComponent(jLabel6)
                             .addComponent(TotalRevenueBookingInput, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(80, 80, 80)
-                        .addComponent(ApplyBookingButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ApplyBookingButton)
                         .addGap(18, 18, 18)
-                        .addComponent(DeleteBookingButton)
+                        .addComponent(DeleteBookingButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(BackBookingButton)
+                        .addComponent(BackBookingButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(89, 89, 89))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -441,6 +447,21 @@ private void populateBookingInfoTable() {
     
     private void ApplyBookingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ApplyBookingButtonActionPerformed
 
+     
+        // Check if all required fields are filled
+        if (ClientNameBookingScreen.getText().isEmpty() ||
+            PhoneNumberBookingInput.getText().isEmpty() ||
+            PropertyMenu.getSelectedItem().equals("Select the property") ||
+            DayRentedBookingInput.getText().isEmpty() ||
+            DayReturnedBookingInput.getText().isEmpty() ||
+            TotalRevenueBookingInput.getText().isEmpty()) {
+            
+            // Display an error message if any of the fields are empty
+            JOptionPane.showMessageDialog(this, "Please fill in all the required fields.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;  // Exit the method without proceeding further
+      }
+    
+        
   try {
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/nestopia?zeroDateTimeBehavior=CONVERT_TO_NULL&user=root&password=");
 
@@ -455,12 +476,14 @@ private void populateBookingInfoTable() {
         String dayReturned = DayReturnedBookingInput.getText();
         String totalRentalprice = TotalRevenueBookingInput.getText(); // Assuming TotalRevenueBookingInput is a text field
 
-        String newQuery = "INSERT INTO Bookings (CheckinDate, CheckoutDate, RentalPrice, ClientID) VALUES (?, ?, ?, ?)";
+        String newQuery = "INSERT INTO Bookings (CheckinDate, CheckoutDate, RentalPrice, ClientID,PropertyName) VALUES (?, ?, ?, ?,?)";
         PreparedStatement pst = conn.prepareStatement(newQuery);
         pst.setString(1, dayRented);
         pst.setString(2, dayReturned);
-        pst.setBigDecimal(3, new BigDecimal(totalRentalprice)); // Assuming RentalPrice is fetched from the UI
+        pst.setBigDecimal(3, new BigDecimal(totalRentalprice)); // Assumig RentalPrice is fetched from the UI
         pst.setInt(4, clientID); // Insert the retrieved client ID
+        pst.setString(5, selectedProperty);
+        
 
         int rowsAffected = pst.executeUpdate();
 
